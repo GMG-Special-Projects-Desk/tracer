@@ -3,10 +3,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
-# from collections import namedtuple
-
 logger = logging.getLogger(__name__)
-# CaseRow = namedtuple('CaseRow', 'party_name, court, case_id, date_filed, date_closed, disposition')
 
 class Tracer(object):
 	def __init__(self,
@@ -61,7 +58,12 @@ class Tracer(object):
 											'steve bannon',
 											'breitbart news',
 											'American Vantage Media',
+											'jeffrey epstein',
 											'Affinity Media',
+											'Cambridge Analytica',
+											'SCL Group',
+											'Alexander Nix',
+											'Brittany Kaiser'
 											'cambridge analytica']
 
 	def login(self):
