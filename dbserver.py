@@ -19,8 +19,14 @@ class DbServer:
         # """Util queries"""
     def create_tables(self):
         tables = ["""
+            CREATE TABLE IF NOT EXISTS parties(
+            p_id SERIAL PRIMARY KEY,
+            name TEXT
+            )
+            """,
+            """
             CREATE TABLE  IF NOT EXISTS cases(
-            id SERIAL PRIMARY KEY,
+            c_id SERIAL PRIMARY KEY,
             party_name TEXT,
             court VARCHAR(255),
             case_id VARCHAR(255),
@@ -28,8 +34,9 @@ class DbServer:
             date_filed DATE,
             date_closed DATE,
             disposition TEXT,
-            search_query VARCHAR(255))
-
+            search_query VARCHAR(255),
+            p_id INTEGER,
+            FOREIGN KEY (p_id) REFERENCES parties(p_id))
           """]
 
         for tSql in tables:
@@ -50,9 +57,9 @@ class DbServer:
         self.execute(createTblSQL.format(tableName, schema))
         self.commit()
 
-    def drop_table(self, tableName):
-        dropTblSQL = 'drop table {};'
-        self.execute(dropTblSQL.format(tableName))
+    def drop_table(self,):
+        dropTblSQL = 'drop table parties cascade; drop table cases;'
+        self.execute(dropTblSQL)
         self.commit()
 
     def delete_by_id(self, _id):
@@ -61,6 +68,11 @@ class DbServer:
         self.commit()
 
     # """These are useful queries for tracer"""
+    def add_party(self, party):
+        query = 'INSERT INTO parties(name) VALUES (\'{}\')'
+        self.execute(query.format(party))
+        self.commit()
+
     def add_cases(self, cases):
         [self.add_case(c) for c in cases]
 
@@ -73,7 +85,8 @@ class DbServer:
                           case_type,
                           date_filed,
                           date_closed,
-                          disposition) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                          disposition,
+                          p_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (case_info['party_name'],
           case_info['search_query'],
@@ -82,16 +95,26 @@ class DbServer:
           case_info['case_type'],
           case_info['date_filed'],
           case_info['date_closed'],
-          case_info['disposition']
+          case_info['disposition'],
+          case_info['p_id']
           )
         self.execute(query, values)
         self.commit()
 
     # """These are useful queries for slacker"""
+    def get_parties(self):
+        self.execute('SELECT * FROM parties;')
+        return self.cur.fetchall()
     def get_counts(self):
         countSQL = 'SELECT count(*), search_query FROM cases GROUP BY search_query';
         self.execute(countSQL)
         return self.cur.fetchall()
+
+    def check_case_exists(self, case_id):
+        countSQL = 'SELECT count(*) FROM cases WHERE case_id=\'{}\';'.format(case_id)
+        self.execute(countSQL)
+        count = self.cur.fetchone()
+        return count[0]
 
     def get_all(self, reverse=False):
         if reverse:

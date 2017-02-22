@@ -79,16 +79,16 @@ class Tracer(object):
             logger.error('Login failed: {}'.format(e))
 
     def search(self):
-        for c in self.companies:
+        for party_id, party in self.db.get_parties():
             try:
-                logger.info('Searching for {} cases for the past {} days'
-                            .format(c, self.num_days))
+                # logger.info('Searching for {} cases for the past {} days'
+                #             .format(c, self.num_days))
 
-                self.search_data['party'] = c
+                self.search_data['party'] = party
                 r = self.session.post(self.search_url, data=self.search_data)
                 if r.status_code == requests.codes.ok:
-                    logger.info("Searched for {}".format(c))
-                    self.parse_html(r.text, c)
+                    logger.info("Searched for {}".format(party))
+                    self.parse_html(r.text, party, party_id)
                     # with open('test.html', 'w') as outfile:
                     #   outfile.write(r.text)
                 else:
@@ -106,7 +106,7 @@ class Tracer(object):
         with open('test.html') as infile:
             self.parse_html(infile, 'test')
 
-    def parse_html(self, html, search_query):
+    def parse_html(self, html, party, party_id):
             for_db = []
             soup = BeautifulSoup(html, 'html.parser')
             details = soup.find('div', {'id': 'details'})
@@ -117,7 +117,8 @@ class Tracer(object):
                 table_name = header.text.strip()
                 for row in table.findAll('tr'):
                     data = {}
-                    data['search_query'] = search_query
+                    data['search_query'] = party
+                    data['p_id'] = party_id
                     data['case_type'] = table_name
                     data['line_no'] = self.get_col('line_no', row)
                     data['party_name'] = self.get_col('party_name', row)
@@ -125,6 +126,9 @@ class Tracer(object):
                     data['court'] = self.get_col('court_id', row)
                     data['disposition'] = self.get_col('disposition', row)
 
+                    if self.db.check_case_exists(data['case_id']) > 0:
+                        logger.info('Skippping {}, already have it'.format(data['case_id']))
+                        continue
                     if not data['disposition']:
                         data['disposition'] = None
 
