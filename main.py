@@ -68,9 +68,11 @@ if __name__ == '__main__':
     if args.drop:
         # db.drop_table('cases')
         db.drop_table()
+        # db.delete_all_cases()
     elif args.test:
         # tracer.parse_test()
-        print(db.get_parties())
+        # print(db.get_parties())
+        tracer.run()
     elif args.bot:
         slacker.get_latest_counts()
     elif args.all:

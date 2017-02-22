@@ -29,6 +29,8 @@ class DbServer:
             c_id SERIAL PRIMARY KEY,
             party_name TEXT,
             court VARCHAR(255),
+            case_title TEXT,
+            case_url TEXT,
             case_id VARCHAR(255),
             case_type TEXT,
             date_filed DATE,
@@ -62,6 +64,10 @@ class DbServer:
         self.execute(dropTblSQL)
         self.commit()
 
+    def delete_all_cases(self):
+        self.execute('delete from cases;')
+        self.commit()
+
     def delete_by_id(self, _id):
         getSQL = 'delete from {} where id = {} ;'
         self.execute(getSQL.format(self.table_name,_id))
@@ -81,16 +87,20 @@ class DbServer:
         INSERT INTO cases(party_name,
                           search_query,
                           court,
+                          case_title,
+                          case_url,
                           case_id,
                           case_type,
                           date_filed,
                           date_closed,
                           disposition,
-                          p_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                          p_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (case_info['party_name'],
           case_info['search_query'],
           case_info['court'],
+          case_info['case_title'],
+          case_info['case_url'],
           case_info['case_id'],
           case_info['case_type'],
           case_info['date_filed'],
@@ -104,6 +114,7 @@ class DbServer:
     # """These are useful queries for slacker"""
     def get_parties(self):
         self.execute('SELECT * FROM parties;')
+
         return self.cur.fetchall()
     def get_counts(self):
         countSQL = 'SELECT count(*), search_query FROM cases GROUP BY search_query';

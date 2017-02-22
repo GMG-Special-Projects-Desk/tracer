@@ -43,8 +43,9 @@ class Tracer(object):
           'party': '',
           'ssn4': '',
           'ssn': '',
+          'show_title':'Yes',
           'court_type': 'all',
-          'default_form': 'b'
+          'default_form': 'allb'
         }
         self.companies = ['facebook',
                           'trump',
@@ -126,6 +127,9 @@ class Tracer(object):
                     data['court'] = self.get_col('court_id', row)
                     data['disposition'] = self.get_col('disposition', row)
 
+                    if data['case_id']:
+                        data['case_url'], data['case_title'] = self.get_case_info(row)
+
                     if self.db.check_case_exists(data['case_id']) > 0:
                         logger.info('Skippping {}, already have it'.format(data['case_id']))
                         continue
@@ -149,6 +153,14 @@ class Tracer(object):
                 if for_db:
                     logger.info('Found {} cases. Adding to db'.format(len(for_db)))
                     self.db.add_cases(for_db)
+
+    def get_case_info(self,row):
+        case_col = row.find('td', {'class': 'case'})
+        if not case_col:
+            return '', ''
+        else:
+            for c in case_col.children:
+                return c['href'], c['title']
 
     def get_col(self, col_name, row):
         return row.find('td', {'class': col_name}) \
