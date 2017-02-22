@@ -1,0 +1,15 @@
+beautifulsoup4==4.5.3
+click==6.7
+Flask==0.12
+Flask-Slack==0.1.5
+Flask-SQLAlchemy==2.1
+gunicorn==19.6.0
+itsdangerous==0.24
+Jinja2==2.9.5
+MarkupSafe==0.23
+psycopg2==2.6.2
+python-env==1.0.0
+requests==2.13.0
+six==1.10.0
+SQLAlchemy==1.1.5
+Werkzeug==0.11.15
