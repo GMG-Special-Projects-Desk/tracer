@@ -130,7 +130,7 @@ class Tracer(object):
                     if data['case_id']:
                         data['case_url'], data['case_title'] = self.get_case_info(row)
 
-                    if self.db.check_case_exists(data['case_id']) > 0:
+                    if self.db.check_case_exists(data['case_id'], data['court']) > 0:
                         logger.info('Skippping {}, already have it'.format(data['case_id']))
                         continue
                     if not data['disposition']:

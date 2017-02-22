@@ -15,13 +15,17 @@ class Slacker:
 
     def get_latest_counts(self):
         try:
-            counts = self.db.get_counts()
-            lines = ["Search Term: {}, Case Count: {}".format(c[1].capitalize(),
-                                                              c[0])
-                     for c in counts]
+            counts = self.db.get_cases_count_from(days=2)
+            if counts:
+                lines = ["{}: {} cases".format(c[1].capitalize(),
+                                                                  c[0])
+                         for c in counts]
 
-            text = "\n".join(lines)
-            self.send(text)
+                text = "\n".join(lines)
+                text += '\n _Use `/tracer` for more info._'
+                self.send(text)
+            else:
+                logger.info('No new cases found')
 
         except Exception as e:
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -31,6 +35,6 @@ class Slacker:
         payload = {'text': text}
         r = requests.post(self.webhook,  data=json.dumps(payload))
         if r.status_code == requests.codes.ok:
-            logger.info("posted {} to slack".format(text))
+            logger.info("posted to slack".format(text))
         else:
             logger.error("Response Body: {}".format(r.text))

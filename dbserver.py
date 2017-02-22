@@ -112,17 +112,21 @@ class DbServer:
         self.commit()
 
     # """These are useful queries for slacker"""
+    def get_cases_count_from(self, days=2):
+        self.execute("SELECT count(*), search_query FROM cases WHERE CURRENT_DATE - date_filed < {} GROUP BY search_query;".format(days))
+        return self.cur.fetchall()
+
     def get_parties(self):
         self.execute('SELECT * FROM parties;')
-
         return self.cur.fetchall()
+
     def get_counts(self):
         countSQL = 'SELECT count(*), search_query FROM cases GROUP BY search_query';
         self.execute(countSQL)
         return self.cur.fetchall()
 
-    def check_case_exists(self, case_id):
-        countSQL = 'SELECT count(*) FROM cases WHERE case_id=\'{}\';'.format(case_id)
+    def check_case_exists(self, case_id, court):
+        countSQL = 'SELECT count(*) FROM cases WHERE case_id=\'{}\' and court=\'{}\';'.format(case_id, court)
         self.execute(countSQL)
         count = self.cur.fetchone()
         return count[0]

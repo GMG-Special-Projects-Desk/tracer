@@ -101,3 +101,4 @@ if __name__ == '__main__':
         [db.add_party(c) for c in companies]
     else:
         tracer.run()
+        slacker.get_latest_counts()
