@@ -1,8 +1,8 @@
-from os.path import join, dirname
+from os.path import join, dirname, abspath
 import dotenv
 
-dotenv_path = join(dirname(__file__), '.env')
-dotenv.load()
+dotenv_path = abspath(join(dirname(__file__), '.env'))
+dotenv.load(dotenv_path)
 
 LOG_FILE = join(dirname(__file__), 'tracer.log')
 PACER_USER = dotenv.get('PACER_USER')

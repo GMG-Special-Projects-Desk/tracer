@@ -5,6 +5,7 @@ from dbserver import DbServer
 from version import __version__
 from settings import *
 import logging
+import linecache
 import sys
 
 def PrintException(logging):
