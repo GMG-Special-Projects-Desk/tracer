@@ -3,7 +3,6 @@ from urllib.parse import urlparse
 
 class DbServer:
     def __init__(self, uri):
-        # urlparse.uses_netloc.append('postgres')
         self.uri = uri
         self.uriObj = urlparse(self.uri)
         self.conn = psycopg2.connect(
@@ -59,9 +58,14 @@ class DbServer:
         self.execute(createTblSQL.format(tableName, schema))
         self.commit()
 
-    def drop_table(self,):
+    def drop_tables(self):
         dropTblSQL = 'drop table parties cascade; drop table cases;'
         self.execute(dropTblSQL)
+        self.commit()
+
+    def drop_table(self, tableName):
+        dropTblSQL = 'drop table {};'
+        self.execute(dropTblSQL.format(tableName))
         self.commit()
 
     def delete_all_cases(self):

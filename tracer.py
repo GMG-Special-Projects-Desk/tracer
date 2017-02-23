@@ -47,25 +47,6 @@ class Tracer(object):
           'court_type': 'all',
           'default_form': 'allb'
         }
-        self.companies = ['facebook',
-                          'trump',
-                          'alphabet',
-                          'google',
-                          'palantir',
-                          'washington post',
-                          'wall street journal',
-                          'new york times',
-                          'glittering steel',
-                          'steve bannon',
-                          'breitbart news',
-                          'American Vantage Media',
-                          'jeffrey epstein',
-                          'Affinity Media',
-                          'Cambridge Analytica',
-                          'SCL Group',
-                          'Alexander Nix',
-                          'Brittany Kaiser',
-                          'cambridge analytica']
 
     def login(self):
         try:
@@ -73,6 +54,8 @@ class Tracer(object):
             r = self.session.post(self.login_url,  data=self.login_data)
             if r.status_code == requests.codes.ok:
                 logger.info("Successfully logged in")
+                logger.info("Searching for cases filed between {} and {}"
+                            .format(self.search_data['date_filed_start'], self.search_data['date_filed_end']))
             else:
                 logger.error("Couldnt log in. Status Code: {}"
                              .format(r.status_code))
@@ -80,11 +63,12 @@ class Tracer(object):
             logger.error('Login failed: {}'.format(e))
 
     def search(self):
+        if len(self.db.get_parties()) == 0:
+          logger.error("No parties to search for in db. Quitting.")
+          return
+
         for party_id, party in self.db.get_parties():
             try:
-                # logger.info('Searching for {} cases for the past {} days'
-                #             .format(c, self.num_days))
-
                 self.search_data['party'] = party
                 r = self.session.post(self.search_url, data=self.search_data)
                 if r.status_code == requests.codes.ok:
