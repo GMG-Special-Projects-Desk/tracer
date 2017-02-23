@@ -5,6 +5,16 @@ from dbserver import DbServer
 from version import __version__
 from settings import *
 import logging
+import sys
+
+def PrintException(logger):
+    exc_type, exc_obj, tb = sys.exc_info()
+    f = tb.tb_frame
+    lineno = tb.tb_lineno
+    filename = f.f_code.co_filename
+    linecache.checkcache(filename)
+    line = linecache.getline(filename, lineno, f.f_globals)
+    logger.error('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
 
 def parse_args():
@@ -48,7 +58,7 @@ if __name__ == '__main__':
 
     args = parse_args()
     logFormat = '%(asctime)s [%(levelname)s] [ %(name)s ] : %(message)s'
-    formatter = logging.Formatter(logFormat)
+    formatter = logging.Formatter(fmt=logFormat, datefmt="%Y-%m-%d %H:%M:%S")
 
     logging.basicConfig(level=(logging.WARN if args.quiet else logging.INFO),
                         format=logFormat,
@@ -60,28 +70,33 @@ if __name__ == '__main__':
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
 
-    db = DbServer(DB_URL)
-
-    tracer = Tracer(user=PACER_USER,
-                    password=PACER_PASS,
-                    num_days=NUM_DAYS,
-                    db=db)
-
-    slacker = Slacker(webhook=SLACK_WEBHOOK,
+    try:
+        db = DbServer(DB_URL)
+        tracer = Tracer(user=PACER_USER,
+                        password=PACER_PASS,
+                        num_days=NUM_DAYS,
                         db=db)
 
-    if args.drop:
-            db.delete_all_cases()
-            db.drop_tables()
-    elif args.test:
-        pass
-    elif args.bot:
-            slacker.get_latest_counts()
-    elif args.all:
+        slacker = Slacker(webhook=SLACK_WEBHOOK,
+                            db=db)
+        if args.drop:
+                db.delete_all_cases()
+                db.drop_tables()
+        elif args.test:
+            pass
+        elif args.bot:
+                slacker.get_latest_counts()
+        elif args.all:
+                tracer.run()
+                slacker.get_latest_counts()
+        elif args.people:
+                [db.add_party(c) for c in INTITAL_PARTIES]
+        else:
             tracer.run()
             slacker.get_latest_counts()
-    elif args.people:
-            [db.add_party(c) for c in INTITAL_PARTIES]
-    else:
-        tracer.run()
-        slacker.get_latest_counts()
+
+    except Exception as e:
+        exc_type, exc_obj, tb = sys.exc_info()
+        logger.error(e)
+        PrintException(logger)
+
