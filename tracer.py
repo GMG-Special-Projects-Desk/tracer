@@ -68,20 +68,35 @@ class Tracer(object):
           return
 
         for party_id, party in self.db.get_parties():
-            try:
-                self.search_data['party'] = party
-                r = self.session.post(self.search_url, data=self.search_data)
-                if r.status_code == requests.codes.ok:
-                    logger.info("Searched for {}".format(party))
-                    self.parse_html(r.text, party, party_id)
-                    # with open('test.html', 'w') as outfile:
-                    #   outfile.write(r.text)
-                else:
-                    logger.error("Couldnt search for {}. Status Code: {}"
-                                 .format(c, r.status_code))
-                    logger.error("Response Body: {}".format(r.text))
-            except Exception as e:
-                logger.error('Search failed: {}'.format(e))
+            variations = self.get_variations(party)
+            for party_variation in variations:
+                try:
+                    self.search_data['party'] = party_variation
+                    r = self.session.post(self.search_url, data=self.search_data)
+                    if r.status_code == requests.codes.ok:
+                        logger.info("Searched for {}".format(party_variation))
+                        self.parse_html(r.text, party, party_id)
+                        # with open('test.html', 'w') as outfile:
+                        #   outfile.write(r.text)
+                    else:
+                        logger.error("Couldnt search for {}. Status Code: {}"
+                                     .format(c, r.status_code))
+                        logger.error("Response Body: {}".format(r.text))
+                except Exception as e:
+                    logger.error('Search failed: {}'.format(e))
+    def get_variations(self, party):
+        tokens = party.split(' ')
+        if len(tokens) == 2:
+            alt = " ".join([tokens[1],tokens[0]])
+            return [party, alt]
+        else:
+            pass
+            return [party]
+            # Add this later when we have people with a middle name in the list
+            # last = tokens[-1]
+            # first = " ".join(tokens[:-1])
+            # alt = " " .join([last, first])
+
 
     def run(self):
         self.login()
