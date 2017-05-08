@@ -12,6 +12,10 @@ class Tracer(object):
                  db,
                  num_days=1):
         self.session = requests.Session()
+        headers = {
+            'user-agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
+        }
+        self.session.headers.update(headers)
         self.login_url = 'https://pacer.login.uscourts.gov/csologin/login.jsf'
         self.search_url = 'https://pcl.uscourts.gov/dquery'
         self.num_days = num_days
@@ -47,12 +51,28 @@ class Tracer(object):
           'court_type': 'all',
           'default_form': 'allb'
         }
+        self.post_headers = {
+            'Pragma': 'no-cache',
+            'Origin': 'https://pcl.uscourts.gov',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'en-US,en;q=0.8',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'no-cache',
+            'Referer': 'https://pcl.uscourts.gov/search',
+            'Connection': 'keep-alive',
+            'DNT': '1',
+        }
 
     def login(self):
         try:
             logger.info('Logging in to Pacer...')
             r = self.session.post(self.login_url,  data=self.login_data)
             if r.status_code == requests.codes.ok:
+                with open('login.html', 'w') as outfile:
+                  outfile.write(r.text)
                 logger.info("Successfully logged in")
                 logger.info("Searching for cases filed between {} and {}"
                             .format(self.search_data['date_filed_start'], self.search_data['date_filed_end']))
@@ -72,15 +92,16 @@ class Tracer(object):
             for party_variation in variations:
                 try:
                     self.search_data['party'] = party_variation
-                    r = self.session.post(self.search_url, data=self.search_data)
+                    self.session.headers.update(self.post_headers)
+                    r = self.session.post(self.search_url, data=self.search_data, allow_redirects=True )
                     if r.status_code == requests.codes.ok:
                         logger.info("Searched for {}".format(party_variation))
-                        self.parse_html(r.text, party, party_id)
                         # with open('test.html', 'w') as outfile:
                         #   outfile.write(r.text)
+                        self.parse_html(r.text, party, party_id)
                     else:
                         logger.error("Couldnt search for {}. Status Code: {}"
-                                     .format(c, r.status_code))
+                                     .format(party_variation, r.status_code))
                         logger.error("Response Body: {}".format(r.text))
                 except Exception as e:
                     logger.error('Search failed: {}'.format(e))
@@ -97,14 +118,15 @@ class Tracer(object):
             # first = " ".join(tokens[:-1])
             # alt = " " .join([last, first])
 
-
+# application/x-www-form-urlencoded
     def run(self):
         self.login()
         self.search()
 
     def parse_test(self):
+        self.login()
         with open('test.html') as infile:
-            self.parse_html(infile, 'test')
+            self.search()
 
     def parse_html(self, html, party, party_id):
             for_db = []
@@ -117,6 +139,7 @@ class Tracer(object):
                 table_name = header.text.strip()
                 for row in table.findAll('tr'):
                     data = {}
+
                     data['search_query'] = party
                     data['p_id'] = party_id
                     data['case_type'] = table_name
@@ -125,6 +148,9 @@ class Tracer(object):
                     data['case_id'] = self.get_col('case', row)
                     data['court'] = self.get_col('court_id', row)
                     data['disposition'] = self.get_col('disposition', row)
+
+                    print(party)
+                    print(data['party_name'])
 
                     if data['case_id']:
                         data['case_url'], data['case_title'] = self.get_case_info(row)
