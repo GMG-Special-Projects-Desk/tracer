@@ -84,9 +84,9 @@ if __name__ == '__main__':
                 db.delete_all_cases()
                 db.drop_tables()
         elif args.test:
-            pass
+            tracer.parse_test()
         elif args.bot:
-                slacker.get_latest_counts()
+                slacker.get_latest_counts(days=10)
         elif args.all:
                 tracer.run()
                 slacker.get_latest_counts()

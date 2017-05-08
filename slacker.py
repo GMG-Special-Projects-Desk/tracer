@@ -13,9 +13,9 @@ class Slacker:
         self.webhook = webhook
         self.db = db
 
-    def get_latest_counts(self):
+    def get_latest_counts(self, days=1):
         try:
-            counts = self.db.get_cases_count_from(days=2)
+            counts = self.db.get_cases_count_from(days=days)
             if counts:
                 lines = ["{}: {} cases".format(c[1].capitalize(),
                                                                   c[0])
