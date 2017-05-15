@@ -13,7 +13,7 @@ class Slacker:
         self.webhook = webhook
         self.db = db
 
-    def get_latest_counts(self, days=1):
+    def get_latest_counts(self, days=1, prevent_timeout=False):
         try:
             counts = self.db.get_cases_count_from(days=days)
             if counts:
@@ -23,7 +23,10 @@ class Slacker:
 
                 text = "\n".join(lines)
                 text += '\n _Use `/tracer` for more info._'
-                self.send(text)
+                if prevent_timeout:
+                    logger.info('Pinging to prevent timeout')
+                else:
+                    self.send(text)
             else:
                 logger.info('No new cases found')
 

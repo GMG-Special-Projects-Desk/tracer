@@ -86,7 +86,7 @@ if __name__ == '__main__':
         elif args.test:
             tracer.parse_test()
         elif args.bot:
-                slacker.get_latest_counts(days=10)
+                slacker.get_latest_counts(days=10, prevent_timeout=True)
         elif args.all:
                 tracer.run()
                 slacker.get_latest_counts()
