@@ -94,7 +94,7 @@ if __name__ == '__main__':
                 [db.add_party(c) for c in INTITAL_PARTIES]
         else:
             tracer.run()
-            slacker.get_latest_counts()
+            slacker.get_latest_counts(days=2)
 
     except Exception as e:
         exc_type, exc_obj, tb = sys.exc_info()
