@@ -8,7 +8,7 @@ Tracer runs every few hours and whenever it kinds new cases it posts them to the
 
 Commands 
 --- 
-You can also query tracer using its slash command from slack. There are three commands you can use
+You can query tracer for more information using its slash command from slack. There are three commands you can use
 
 `/tracer list`
 
@@ -24,7 +24,9 @@ Note: Please be careful to make sure we are not already following the party you'
 Lists all the cases we have for a particular party with basic info plus a link to the Pacer url for the case. 
 Note: You will need pacer credentials to see the actual case information.
 
+Heres an example:
 
+<img src="https://github.com/GMG-Special-Projects-Desk/tracer/blob/master/search.png?raw=true" >
 
 
 
