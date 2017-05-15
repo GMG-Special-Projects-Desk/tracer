@@ -30,3 +30,4 @@ Heres an example:
 
 
 
+Sometimes if it hasnt been run for a while the server will go to sleep and the slash command will timeout. Just wait a couple of seconds and try again, it should work
