@@ -4,7 +4,7 @@ Tracer is a slack bot that scrapes Pacer for new cases of people and companies w
 
 Tracer runs every few hours and whenever it kinds new cases it posts them to the `_k_tracer` channel.\
 
-![Tracer Screenshot](./tracer.png?raw=true "Tracer Screenshot" | width=100) <!-- .element height="50%" width="50%" -->
+![Tracer Screenshot](https://github.com/GMG-Special-Projects-Desk/tracer/blob/master/tracer.png?raw=true "Tracer Screenshot" ) <!-- .element height="50%" width="50%" -->
 
 Commands 
 --- 
